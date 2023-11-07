@@ -19,6 +19,7 @@ Type your \\LaTeX\\ here. For example: $\\frac{1}{2}$
 
 function App() {
     const [inputText, setInputText] = useState(exampleText);
+    const [compileText, setCompileText] = useState("Recompile (Ctrl + Enter)");
     const [PDFurl, setPDFurl] = useState("example.pdf");
 
     const handleInputChange = (event) => {
@@ -26,6 +27,8 @@ function App() {
     };
 
     const compilePDF = () => {
+        setCompileText("Recompile (Ctrl + Enter)");
+
         fetch("https://willb256.pythonanywhere.com/get_pdf", {
             method: "POST",
             body: JSON.stringify(inputText),
@@ -41,6 +44,7 @@ function App() {
 
                 const url = window.URL.createObjectURL(blob);
                 setPDFurl(url);
+                console.log("Reached");
             })
             .catch((error) => {
                 console.error("Error:", error);
@@ -66,15 +70,25 @@ function App() {
     //     }
     // };
 
+    const handleCompile = (event) => {
+        setCompileText("Compiling. Please wait.");
+    };
+
+    useEffect(() => {
+        if (compileText === "Compiling. Please wait.") {
+            compilePDF();
+        }
+    }, [compileText]);
+
     return (
         <div className="app-container">
             <div className="text-container">
                 <div className="menu-bar">
                     <ul className="menu-list">
-                        <li onClick={uploadFile}>Upload Image</li>
+                        <li>Upload Image</li>
                         <li>Insert Image URL</li>
                         <li>Download TeX File</li>
-                        <li onClick={compilePDF}>Recompile (Ctrl + Enter)</li>
+                        <li onClick={handleCompile}>{compileText}</li>
                     </ul>
                 </div>
                 <textarea
@@ -83,7 +97,7 @@ function App() {
                     placeholder={exampleText}
                 />
             </div>
-            <embed type="application/pdf" src={PDFurl} width="500" height="375" />
+            <embed type="application/pdf" src={PDFurl} />
         </div>
     );
 }

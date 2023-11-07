@@ -7,12 +7,18 @@ from scipy.special import expit, logit
 from sklearn.linear_model import LinearRegression
 import numpy as np
 
+from dotenv import load_dotenv
+from openai import OpenAI
+
 import subprocess
 import tempfile
 import os
 
 app = Flask(__name__)
 CORS(app)
+
+load_dotenv()
+client = OpenAI()
 
 # look at README.md then server.py then original files for more explanation. also, feel free to hit me up at nhatbui@tamu.edu for any question or suggestion. heavily refactored and concise method (hence small file size but this took a lot more work than you would expect), which involves transforming the data twice, through the response variable and the explanatory variable, then fit a weighted lin reg. i have tested various distributions and optimization methods and this method is as good as it gets.
 
@@ -157,15 +163,19 @@ def get_pdf():
     response.headers["Content-Disposition"] = "inline; filename=output.pdf"
     return response
 
-
-@app.route("/test", methods=["POST"])
 def test():
-    return jsonify(
-        {
-            "a": 1,
-        }
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."},
+            {"role": "user", "content": "Compose a poem that explains the concept of recursion in programming."}
+        ]
     )
+
+    print(completion.choices[0].message)
+
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    test()
+    # app.run(debug=True)
