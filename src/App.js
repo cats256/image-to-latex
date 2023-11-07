@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Latex from "react-latex";
 import "./App.css";
 
@@ -18,13 +18,12 @@ function App() {
 
     const handleInputChange = (event) => {
         setInputText(event.target.value);
-        console.log(JSON.stringify(inputText));
     };
 
     const downloadPdf = () => {
         fetch("https://willb256.pythonanywhere.com/get_pdf", {
             method: "POST",
-            body: JSON.stringify({ latex: inputText }),
+            body: JSON.stringify(inputText),
             headers: {
                 "Content-Type": "application/json",
             },
@@ -32,43 +31,13 @@ function App() {
             .then((response) => response.blob())
             .then((blob) => {
                 const url = window.URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = url;
-                link.setAttribute("download", "output.pdf");
-
-                document.body.appendChild(link);
-
-                link.click();
-
-                link.parentNode.removeChild(link);
-            });
-    };
-
-    useEffect(() => {
-        if (!inputValues["minGrade"] || !inputValues["maxGrade"] || Object.keys(inputValues["quantiles"]).length <= 1) {
-            return;
-        }
-
-        fetch("https://willb256.pythonanywhere.com/parameters", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(inputValues),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
-                }
-                return response.json();
-            })
-            .then((data) => {
-                setParameters(data);
+                window.open(url, "_blank");
+                window.URL.revokeObjectURL(url);
             })
             .catch((error) => {
                 console.error("Error:", error);
             });
-    }, [inputValues]);
+    };
 
     return (
         <div className="app-container" style={{ fontSize: 24 }}>
@@ -79,6 +48,7 @@ function App() {
             />
             {/* <Latex>{inputText}</Latex> */}
             <button onClick={downloadPdf}>Download PDF</button>
+            <embed type="application/pdf" src="8.pdf" width="500" height="375" />
         </div>
     );
 }
