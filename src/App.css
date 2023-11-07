@@ -42,7 +42,7 @@
     justify-content: center;
     align-items: center;
     padding-top: 8vh;
-    gap: 8vw;
+    justify-content: space-evenly;
     font-size: clamp(1rem, 2vw, 2rem) !important;
 }
 
