@@ -47,12 +47,31 @@ function App() {
             });
     };
 
+    // const uploadFile = () => {
+    //     if (selectedFile) {
+    //         const formData = new FormData();
+    //         formData.append("file", selectedFile);
+
+    //         fetch("API_ENDPOINT", {
+    //             method: "POST",
+    //             body: formData,
+    //         })
+    //             .then((response) => response.json())
+    //             .then((data) => {
+    //                 console.log("Success:", data);
+    //             })
+    //             .catch((error) => {
+    //                 console.error("Error:", error);
+    //             });
+    //     }
+    // };
+
     return (
         <div className="app-container">
             <div className="text-container">
                 <div className="menu-bar">
                     <ul className="menu-list">
-                        <li>Upload Image</li>
+                        <li onClick={uploadFile}>Upload Image</li>
                         <li>Insert Image URL</li>
                         <li>Download TeX File</li>
                         <li onClick={compilePDF}>Recompile (Ctrl + Enter)</li>
