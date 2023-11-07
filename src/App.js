@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Latex from "react-latex";
 import "./App.css";
 
 const exampleText = `\\documentclass{article}
@@ -13,15 +12,20 @@ Type your \\LaTeX\\ here. For example: $\\frac{1}{2}$
 
 \\end{document}`;
 
+// patch security issue associated with compiling latex
+// change to inter font
+// configure latex engine to disable shell escape commands (-no-shell-escape option with pdflatex).
+// add ctrl + enter shortcut
+
 function App() {
     const [inputText, setInputText] = useState(exampleText);
-    const [pdfUrl, setPdfUrl] = useState(null);
+    const [PDFurl, setPDFurl] = useState("example.pdf");
 
     const handleInputChange = (event) => {
         setInputText(event.target.value);
     };
 
-    const downloadPdf = () => {
+    const compilePDF = () => {
         fetch("https://willb256.pythonanywhere.com/get_pdf", {
             method: "POST",
             body: JSON.stringify(inputText),
@@ -31,33 +35,36 @@ function App() {
         })
             .then((response) => response.blob())
             .then((blob) => {
-                if (pdfUrl) {
-                    window.URL.revokeObjectURL(pdfUrl);
+                if (PDFurl) {
+                    window.URL.revokeObjectURL(PDFurl);
                 }
+
                 const url = window.URL.createObjectURL(blob);
-                setPdfUrl(url);
-                // window.open(url, "_blank");
-                // window.URL.revokeObjectURL(url);
+                setPDFurl(url);
             })
             .catch((error) => {
                 console.error("Error:", error);
             });
     };
 
-    useEffect(() => {
-        downloadPdf();
-    }, []);
-
     return (
-        <div className="app-container" style={{ fontSize: 24 }}>
-            <textarea
-                value={inputText === exampleText ? "" : inputText}
-                onChange={handleInputChange}
-                placeholder={exampleText}
-            />
-            {/* <Latex>{inputText}</Latex> */}
-            <button onClick={downloadPdf}>Download PDF</button>
-            <embed type="application/pdf" src={pdfUrl} width="500" height="375" />
+        <div className="app-container">
+            <div className="text-container">
+                <div className="menu-bar">
+                    <ul className="menu-list">
+                        <li>Upload Image</li>
+                        <li>Insert Image URL</li>
+                        <li>Download TeX File</li>
+                        <li onClick={compilePDF}>Recompile (Ctrl + Enter)</li>
+                    </ul>
+                </div>
+                <textarea
+                    value={inputText === exampleText ? inputText : inputText}
+                    onChange={handleInputChange}
+                    placeholder={exampleText}
+                />
+            </div>
+            <embed type="application/pdf" src={PDFurl} width="500" height="375" />
         </div>
     );
 }
