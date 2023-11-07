@@ -144,14 +144,13 @@ def latex_to_pdf(latex_source):
 
 @app.route("/get_pdf", methods=["POST"])
 def get_pdf():
-    request_json = request.json
     latex_source = r"""
     \documentclass{article}
     \begin{document}
     Hello, World!   
     \end{document}
     """
-    pdf_bytes = latex_to_pdf(latex_source)
+    pdf_bytes = latex_to_pdf(request.json)
 
     response = make_response(pdf_bytes)
     response.headers["Content-Type"] = "application/pdf"
@@ -159,5 +158,14 @@ def get_pdf():
     return response
 
 
+@app.route("/test", methods=["POST"])
+def test():
+    return jsonify(
+        {
+            "a": 1,
+        }
+    )
+
+
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
