@@ -154,7 +154,6 @@ def latex_to_pdf(latex_source):
     return pdf_bytes
 
 def extract_latex_code(response):
-    print(response.json())
     latex_code = response.json()["choices"][0]["message"]["content"]
 
     print(latex_code)
@@ -163,8 +162,6 @@ def extract_latex_code(response):
 
     if not matches:
         abort(422)
-
-    print(matches[0][8:-3])
     
     return matches[0][8:-3]
 
@@ -202,7 +199,6 @@ def test_get_image():
                 "type": "image_url",
                 "image_url": {
                     "url": f"data:image/jpeg;base64,{base64_image}"
-                    # "url": "https://media.discordapp.net/attachments/1171246119263674378/1171595122429927464/example_equation_written_4.png?ex=655d3ffc&is=654acafc&hm=6460a3c9c9638414e17d4f880524538dd8869d74909e1f2c0aeb9cd5dcd9ce28&=&width=562&height=231"
                 }
             }
             ]
@@ -213,7 +209,6 @@ def test_get_image():
 
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
-    print("something")
     latex_code = extract_latex_code(response)
     pdf_bytes = latex_to_pdf(latex_code)
 
