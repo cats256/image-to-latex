@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 const exampleText = `\\documentclass{article}
@@ -21,6 +21,7 @@ function App() {
     const [inputText, setInputText] = useState(exampleText);
     const [compileText, setCompileText] = useState("Recompile (Ctrl + Enter)");
     const [PDFurl, setPDFurl] = useState("example.pdf");
+    const fileInputRef = useRef(null);
 
     const handleInputChange = (event) => {
         setInputText(event.target.value);
@@ -49,10 +50,35 @@ function App() {
         setCompileText("Compiling. Please wait.");
     };
 
+    const handleUploadClick = () => {
+        fileInputRef.current.click();
+    };
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            fetch("YOUR_API_ENDPOINT", {
+                method: "POST",
+                body: formData,
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log("Success:", data);
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                });
+        }
+    };
+
     useEffect(() => {
         if (compileText === "Compiling. Please wait.") {
             setCompileText("Recompile (Ctrl + Enter)");
 
+            // https://willb256.pythonanywhere.com/get_pdf
             fetch("https://willb256.pythonanywhere.com/get_pdf", {
                 method: "POST",
                 body: JSON.stringify(inputText),
@@ -90,7 +116,14 @@ function App() {
             <div className="text-container">
                 <div className="menu-bar">
                     <ul className="menu-list">
-                        <li>Upload Image</li>
+                        <li onClick={handleUploadClick}>Upload Image</li>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            style={{ display: "none" }}
+                            accept="image/*"
+                        />
                         <li>Insert Image URL</li>
                         <li>Download TeX File</li>
                         <li onClick={handleCompile}>{compileText}</li>

@@ -208,6 +208,6 @@ def reg_exp():
 
 
 if __name__ == "__main__":
-    reg_exp()
+    # reg_exp()
     # test()
-    # app.run(debug=True)
+    app.run(debug=True)
