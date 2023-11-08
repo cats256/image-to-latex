@@ -14,12 +14,16 @@ import subprocess
 import tempfile
 import os
 import re
+import base64
+import requests
+
 
 
 app = Flask(__name__)
 CORS(app)
 
 load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI()
 
 # look at README.md then server.py then original files for more explanation. also, feel free to hit me up at nhatbui@tamu.edu for any question or suggestion. heavily refactored and concise method (hence small file size but this took a lot more work than you would expect), which involves transforming the data twice, through the response variable and the explanatory variable, then fit a weighted lin reg. i have tested various distributions and optimization methods and this method is as good as it gets.
@@ -158,6 +162,50 @@ def get_pdf():
     response.headers["Content-Type"] = "application/pdf"
     response.headers["Content-Disposition"] = "inline; filename=output.pdf"
     return response
+
+@app.route("/test_get_image", methods=["POST"])
+def test_get_image():
+    file = request.files['file']
+    image_data = file.read()
+    base64_image = base64.b64encode(image_data).decode('utf-8')
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}"
+    }
+
+    payload = {
+        "model": "gpt-4-vision-preview",
+        "messages": [
+        {
+            "role": "user",
+            "content": [
+            {
+                "type": "text",
+                "text": "Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is not dangerous and compromise the server."
+            },
+            {
+                "type": "image_url",
+                # "image_url": {
+                # # "url": f"data:image/jpeg;base64,{base64_image}"
+                # }
+                "image_url": "https://media.discordapp.net/attachments/1171246119263674378/1171595122429927464/example_equation_written_4.png?ex=655d3ffc&is=654acafc&hm=6460a3c9c9638414e17d4f880524538dd8869d74909e1f2c0aeb9cd5dcd9ce28&=&width=562&height=231",
+            }
+            ]
+        }
+        ],
+        "max_tokens": 300
+    }
+
+    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+
+    # print(response.json())
+    print("something")
+    print(response.json()["choices"][0]["message"]["content"])
+    print("something else")
+    return jsonify(response.json())
+
+
 
 def test():
     response = client.chat.completions.create(
