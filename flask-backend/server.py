@@ -150,12 +150,6 @@ def latex_to_pdf(latex_source):
 
 @app.route("/get_pdf", methods=["POST"])
 def get_pdf():
-    latex_source = r"""
-    \documentclass{article}
-    \begin{document}
-    Hello, World!   
-    \end{document}
-    """
     pdf_bytes = latex_to_pdf(request.json)
 
     response = make_response(pdf_bytes)
@@ -167,12 +161,12 @@ def test():
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."},
-            {"role": "user", "content": "Compose a poem that explains the concept of recursion in programming."}
+            {"role": "system", "content": "You only say hi"},
+            {"role": "user", "content": "Hi"}
         ]
     )
 
-    print(completion.choices[0].message)
+    print(completion.choices[0].message.content)
 
 
 

@@ -26,31 +26,6 @@ function App() {
         setInputText(event.target.value);
     };
 
-    const compilePDF = () => {
-        setCompileText("Recompile (Ctrl + Enter)");
-
-        fetch("https://willb256.pythonanywhere.com/get_pdf", {
-            method: "POST",
-            body: JSON.stringify(inputText),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then((response) => response.blob())
-            .then((blob) => {
-                if (PDFurl) {
-                    window.URL.revokeObjectURL(PDFurl);
-                }
-
-                const url = window.URL.createObjectURL(blob);
-                setPDFurl(url);
-                console.log("Reached");
-            })
-            .catch((error) => {
-                console.error("Error:", error);
-            });
-    };
-
     // const uploadFile = () => {
     //     if (selectedFile) {
     //         const formData = new FormData();
@@ -76,9 +51,39 @@ function App() {
 
     useEffect(() => {
         if (compileText === "Compiling. Please wait.") {
-            compilePDF();
+            setCompileText("Recompile (Ctrl + Enter)");
+
+            fetch("https://willb256.pythonanywhere.com/get_pdf", {
+                method: "POST",
+                body: JSON.stringify(inputText),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.blob();
+                })
+                .then((blob) => {
+                    if (PDFurl) {
+                        window.URL.revokeObjectURL(PDFurl);
+                    }
+
+                    const url = window.URL.createObjectURL(blob);
+                    setPDFurl(url);
+                })
+                .catch((error) => {
+                    if (error.message.includes("500")) {
+                        setPDFurl("compile-failed-document.pdf");
+                    } else {
+                        setPDFurl("compile-failed-server.pdf");
+                    }
+                    console.error("Error:", error);
+                });
         }
-    }, [compileText]);
+    }, [compileText, PDFurl, inputText]);
 
     return (
         <div className="app-container">
