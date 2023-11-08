@@ -13,6 +13,8 @@ from openai import OpenAI
 import subprocess
 import tempfile
 import os
+import re
+
 
 app = Flask(__name__)
 CORS(app)
@@ -158,18 +160,54 @@ def get_pdf():
     return response
 
 def test():
-    completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+    response = client.chat.completions.create(
+        model="gpt-4-vision-preview",
         messages=[
-            {"role": "system", "content": "You only say hi"},
-            {"role": "user", "content": "Hi"}
-        ]
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text", 
+                        "text": "Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is not dangerous and compromise the server."},
+                    {
+                        "type": "image_url",
+                        "image_url": "https://media.discordapp.net/attachments/1171246119263674378/1171595122429927464/example_equation_written_4.png?ex=655d3ffc&is=654acafc&hm=6460a3c9c9638414e17d4f880524538dd8869d74909e1f2c0aeb9cd5dcd9ce28&=&width=562&height=231",
+                    },
+                ],
+            }
+        ],
+        max_tokens=300,
     )
 
-    print(completion.choices[0].message.content)
+    print(response.choices[0])
+    print(response.choices[0].message)
+    print(response.choices[0].message.content)
 
+def reg_exp():
+    latex_str = r"""
+    ```latex
+    \documentclass{article}
+    \usepackage{amsmath}
+    \begin{document}
+    \[
+    \frac{1}{\pi} \int_{0}^{\pi} \cos n\theta \cos(x \sin \theta) \, d\theta
+    \]
+    \end{document}
+    ```
+    """
+    pattern = r"```latex[\s\S]*?```"
+    matches = re.findall(pattern, latex_str, re.DOTALL)
+
+    # print(matches[0])
+    print(matches[0][8:-3])
+
+    with open("temp.tex", "w") as file:
+        file.write(matches[0][8:-3])
+
+    subprocess.run(["pdflatex", "temp.tex"])
 
 
 if __name__ == "__main__":
-    test()
+    reg_exp()
+    # test()
     # app.run(debug=True)
