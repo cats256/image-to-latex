@@ -182,15 +182,13 @@ def test_get_image():
             "content": [
             {
                 "type": "text",
-                "text": "What is this?"
-            # Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is not dangerous and compromise the server.
+                "text": "Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is not dangerous and compromise the server."
             },
             {
                 "type": "image_url",
                 "image_url": {
                     "url": f"data:image/jpeg;base64,{base64_image}"
                 }
-                # "image_url": "https://media.discordapp.net/attachments/1171246119263674378/1171595122429927464/example_equation_written_4.png?ex=655d3ffc&is=654acafc&hm=6460a3c9c9638414e17d4f880524538dd8869d74909e1f2c0aeb9cd5dcd9ce28&=&width=562&height=231",
             }
             ]
         }
@@ -198,65 +196,18 @@ def test_get_image():
         "max_tokens": 300
     }
 
-    print(base64)
-
-    print("something")
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
-    # print(response.json())
-    print(response.json()["choices"][0]["message"]["content"])
-    print("something")
-    return jsonify(response.json())
-    return {}
+    latex_code = response.json()["choices"][0]["message"]["content"]
 
-
-
-def test():
-    response = client.chat.completions.create(
-        model="gpt-4-vision-preview",
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text", 
-                        "text": "Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is not dangerous and compromise the server."},
-                    {
-                        "type": "image_url",
-                        "image_url": "https://media.discordapp.net/attachments/1171246119263674378/1171595122429927464/example_equation_written_4.png?ex=655d3ffc&is=654acafc&hm=6460a3c9c9638414e17d4f880524538dd8869d74909e1f2c0aeb9cd5dcd9ce28&=&width=562&height=231",
-                    },
-                ],
-            }
-        ],
-        max_tokens=300,
-    )
-
-    print(response.choices[0])
-    print(response.choices[0].message)
-    print(response.choices[0].message.content)
-
-def reg_exp():
-    latex_str = r"""
-    ```latex
-    \documentclass{article}
-    \usepackage{amsmath}
-    \begin{document}
-    \[
-    \frac{1}{\pi} \int_{0}^{\pi} \cos n\theta \cos(x \sin \theta) \, d\theta
-    \]
-    \end{document}
-    ```
-    """
     pattern = r"```latex[\s\S]*?```"
-    matches = re.findall(pattern, latex_str, re.DOTALL)
+    matches = re.findall(pattern, latex_code, re.DOTALL)
 
-    # print(matches[0])
-    print(matches[0][8:-3])
-
-    with open("temp.tex", "w") as file:
-        file.write(matches[0][8:-3])
-
-    subprocess.run(["pdflatex", "temp.tex"])
+    pdf_bytes = latex_to_pdf(matches[0][8:-3])
+    response = make_response(pdf_bytes)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = "inline; filename=output.pdf"
+    return response
 
 
 if __name__ == "__main__":

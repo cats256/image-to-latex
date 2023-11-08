@@ -88,3 +88,7 @@ textarea {
 .menu-list li:hover {
     text-decoration: underline;
 }
+
+input {
+    display: none;
+}
