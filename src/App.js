@@ -55,7 +55,9 @@ function App() {
                     setPDFurl(url);
                 })
                 .catch((error) => {
-                    if (error.message.includes("500")) {
+                    if (error.message.includes("422")) {
+                        setPDFurl("unable_to_produce_latex.pdf");
+                    } else if (error.message.includes("500")) {
                         setPDFurl("compile-failed-document.pdf");
                     } else {
                         setPDFurl("compile-failed-server.pdf");
@@ -91,7 +93,9 @@ function App() {
                     setPDFurl(url);
                 })
                 .catch((error) => {
-                    if (error.message.includes("500")) {
+                    if (error.message.includes("422")) {
+                        setPDFurl("unable_to_product_latex.pdf");
+                    } else if (error.message.includes("500")) {
                         setPDFurl("compile-failed-document.pdf");
                     } else {
                         setPDFurl("compile-failed-server.pdf");
