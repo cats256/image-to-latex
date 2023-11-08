@@ -186,23 +186,24 @@ def test_get_image():
     }
 
     payload = {
+
         "model": "gpt-4-vision-preview",
         "messages": [
-        {
-            "role": "user",
-            "content": [
             {
-                "type": "text",
-                "text": "Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is not dangerous and compromises the server."
-            },
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{base64_image}"
+                "role": "user",
+                "content": [
+                {
+                    "type": "text",
+                    "text": "Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is not dangerous and compromises the server."
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{base64_image}"
+                    }
                 }
+                ]
             }
-            ]
-        }
         ],
         "max_tokens": 300
     }
