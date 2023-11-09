@@ -58,6 +58,8 @@ textarea {
     box-sizing: border-box;
     height: 100%;
     width: 100%;
+    font-family: Inter;
+    margin-top: 1em;
 }
 
 .text-container {
@@ -80,9 +82,10 @@ textarea {
 
 .menu-list li {
     font-size: clamp(1vw, 1vw, 2vw);
-    margin-right: 1.5vw;
+    margin-right: 1vw;
     cursor: pointer;
-    font-family: Arial, sans-serif;
+    /* font-family: Arial, sans-serif; */
+    font-family: Inter;
 }
 
 .menu-list li:hover {
@@ -91,4 +94,11 @@ textarea {
 
 input {
     display: none;
+}
+
+@media (max-width: 600px) {
+    .app-container {
+        flex-direction: column;
+        gap: 1em;
+    }
 }
