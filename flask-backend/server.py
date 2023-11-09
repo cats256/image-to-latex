@@ -18,7 +18,6 @@ import base64
 import requests
 
 
-
 app = Flask(__name__)
 CORS(app)
 
@@ -153,6 +152,7 @@ def latex_to_pdf(latex_source):
 
     return pdf_bytes
 
+
 def extract_latex_code(response):
     latex_code = response.json()["choices"][0]["message"]["content"]
 
@@ -162,8 +162,9 @@ def extract_latex_code(response):
 
     if not matches:
         abort(422)
-    
+
     return matches[0][8:-3]
+
 
 @app.route("/get_pdf", methods=["POST"])
 def get_pdf():
@@ -174,41 +175,38 @@ def get_pdf():
     response.headers["Content-Disposition"] = "inline; filename=output.pdf"
     return response
 
+
 @app.route("/test_get_image", methods=["POST"])
 def test_get_image():
-    file = request.files['file']
+    file = request.files["file"]
     image_data = file.read()
-    base64_image = base64.b64encode(image_data).decode('utf-8')
+    base64_image = base64.b64encode(image_data).decode("utf-8")
 
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}"
-    }
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
 
     payload = {
-
         "model": "gpt-4-vision-preview",
         "messages": [
             {
                 "role": "user",
                 "content": [
-                {
-                    "type": "text",
-                    "text": "Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is not dangerous and compromises the server."
-                },
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": f"data:image/jpeg;base64,{base64_image}"
-                    }
-                }
-                ]
+                    {
+                        "type": "text",
+                        "text": "Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is not dangerous and compromises the server.",
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
+                    },
+                ],
             }
         ],
-        "max_tokens": 300
+        "max_tokens": 300,
     }
 
-    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+    response = requests.post(
+        "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
+    )
 
     latex_code = extract_latex_code(response)
     pdf_bytes = latex_to_pdf(latex_code)
@@ -217,6 +215,7 @@ def test_get_image():
     response.headers["Content-Type"] = "application/pdf"
     response.headers["Content-Disposition"] = "inline; filename=output.pdf"
     return response
+
 
 if __name__ == "__main__":
     app.run(debug=True)
