@@ -193,25 +193,32 @@ def test_get_image():
                     },
                     {
                         "type": "image_url",
-                        "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image}",
+                            "detail": "high",
+                        },
                     },
                 ],
             }
         ],
-        "max_tokens": 300,
+        "max_tokens": 1000,
+        "temperature": 0,
+        "stop": "\end{document}",
     }
 
     response = requests.post(
         "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
     )
 
-    latex_code = extract_latex_code(response)
-    pdf_bytes = latex_to_pdf(latex_code)
+    print(response.json())
 
-    response = make_response(pdf_bytes)
-    response.headers["Content-Type"] = "application/pdf"
-    response.headers["Content-Disposition"] = "inline; filename=output.pdf"
-    return response
+    # latex_code = extract_latex_code(response)
+    # pdf_bytes = latex_to_pdf(latex_code)
+
+    # response = make_response(pdf_bytes)
+    # response.headers["Content-Type"] = "application/pdf"
+    # response.headers["Content-Disposition"] = "inline; filename=output.pdf"
+    return response.json()
 
 
 if __name__ == "__main__":
