@@ -11,3 +11,4 @@
 # add option to switch between high and low detail
 # look up how to do prompt engineering
 # check out tesseract for helping with this
+# add a mode to fix grammar (ask chatgpt to fix the grammar in the document if possible)
