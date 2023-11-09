@@ -154,12 +154,13 @@ def latex_to_pdf(latex_source):
 
 
 def extract_latex_code(response):
-    latex_code = response.json()["choices"][0]["message"]["content"]
+    latex_code = response.json()["choices"][0]["message"]["content"] + "\end{document}```"
     matches = re.findall("```latex[\s\S]*?```", latex_code, re.DOTALL)
 
     if not matches:
         abort(422)
 
+    print(matches[0][8:-3])
     return matches[0][8:-3]
 
 
@@ -210,15 +211,15 @@ def test_get_image():
         "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
     )
 
-    print(response.json())
+    print("something")
 
-    # latex_code = extract_latex_code(response)
-    # pdf_bytes = latex_to_pdf(latex_code)
+    latex_code = extract_latex_code(response)
+    pdf_bytes = latex_to_pdf(latex_code)
 
-    # response = make_response(pdf_bytes)
-    # response.headers["Content-Type"] = "application/pdf"
-    # response.headers["Content-Disposition"] = "inline; filename=output.pdf"
-    return response.json()
+    response = make_response(pdf_bytes)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = "inline; filename=output.pdf"
+    return response
 
 
 if __name__ == "__main__":

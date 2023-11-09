@@ -7,3 +7,7 @@
 # promote the site
 # add @media only screen and (min-width: 600px)
 # add mk4ht (latex to html) support
+# calculate tokens
+# add option to switch between high and low detail
+# look up how to do prompt engineering
+# check out tesseract for helping with this
