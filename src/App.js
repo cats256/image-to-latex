@@ -18,16 +18,13 @@ function App() {
     const [PDFurl, setPDFurl] = useState("example.pdf");
     const fileInputRef = useRef(null);
 
-    const handleInputChange = (event) => {
-        setInputText(event.target.value);
-    };
+    const handleInputChange = (event) => setInputText(event.target.value);
+    const handleCompile = () => setCompileText("Compiling. Please wait.");
+    const handleUploadClick = () => fileInputRef.current.click();
 
-    const handleCompile = () => {
-        setCompileText("Compiling. Please wait.");
-    };
-
-    const handleUploadClick = () => {
-        fileInputRef.current.click();
+    const base64ToBlob = async (base64Data, contentType) => {
+        const base64Response = await fetch(`data:${contentType};base64,${base64Data}`);
+        return base64Response.blob();
     };
 
     const handleFileChange = (event) => {
@@ -44,15 +41,17 @@ function App() {
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}`);
                     }
-                    return response.blob();
+                    return response.json();
                 })
-                .then((blob) => {
-                    if (PDFurl) {
-                        window.URL.revokeObjectURL(PDFurl);
-                    }
+                .then(async (data) => {
+                    const latexCode = data.latex_code;
+                    const base64PDF = data.pdf_file;
 
-                    const url = window.URL.createObjectURL(blob);
+                    const pdfBlob = await base64ToBlob(base64PDF, "application/pdf");
+                    const url = URL.createObjectURL(pdfBlob);
+
                     setPDFurl(url);
+                    setInputText(latexCode.startsWith("\n") ? latexCode.substring(1) : latexCode);
                 })
                 .catch((error) => {
                     if (error.message.includes("422")) {

@@ -211,15 +211,20 @@ def test_get_image():
         "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
     )
 
-    print("something")
-
     latex_code = extract_latex_code(response)
     pdf_bytes = latex_to_pdf(latex_code)
 
-    response = make_response(pdf_bytes)
-    response.headers["Content-Type"] = "application/pdf"
-    response.headers["Content-Disposition"] = "inline; filename=output.pdf"
-    return response
+    base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+
+    return jsonify({
+        "latex_code": latex_code,
+        "pdf_file": base64_pdf
+    })
+
+    # response = make_response(pdf_bytes)
+    # response.headers["Content-Type"] = "application/pdf"
+    # response.headers["Content-Disposition"] = "inline; filename=output.pdf"
+    # return response
 
 
 if __name__ == "__main__":
