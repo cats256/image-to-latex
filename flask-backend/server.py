@@ -155,10 +155,7 @@ def latex_to_pdf(latex_source):
 
 def extract_latex_code(response):
     latex_code = response.json()["choices"][0]["message"]["content"]
-
-    print(latex_code)
-    pattern = r"```latex[\s\S]*?```"
-    matches = re.findall(pattern, latex_code, re.DOTALL)
+    matches = re.findall("```latex[\s\S]*?```", latex_code, re.DOTALL)
 
     if not matches:
         abort(422)
