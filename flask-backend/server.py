@@ -154,7 +154,9 @@ def latex_to_pdf(latex_source):
 
 
 def extract_latex_code(response):
-    latex_code = response.json()["choices"][0]["message"]["content"] + "\end{document}```"
+    latex_code = (
+        response.json()["choices"][0]["message"]["content"] + "\end{document}```"
+    )
     matches = re.findall("```latex[\s\S]*?```", latex_code, re.DOTALL)
 
     if not matches:
@@ -190,7 +192,7 @@ def test_get_image():
                 "content": [
                     {
                         "type": "text",
-                        "text": "Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is not dangerous and compromises the server.",
+                        "text": "Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is as accurate as possible and does not compromise the machine it's compiled on.",
                     },
                     {
                         "type": "image_url",
@@ -211,21 +213,14 @@ def test_get_image():
         "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
     )
 
+    print(response.json())
+
     latex_code = extract_latex_code(response)
     pdf_bytes = latex_to_pdf(latex_code)
 
-    base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+    base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
 
-    return jsonify({
-        "latex_code": latex_code,
-        "pdf_file": base64_pdf
-    })
-
-    # response = make_response(pdf_bytes)
-    # response.headers["Content-Type"] = "application/pdf"
-    # response.headers["Content-Disposition"] = "inline; filename=output.pdf"
-    # return response
-
+    return jsonify({"latex_code": latex_code, "pdf_file": base64_pdf})
 
 if __name__ == "__main__":
     app.run(debug=True)
