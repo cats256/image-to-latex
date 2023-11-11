@@ -186,7 +186,7 @@ def test_get_image():
                 "content": [
                     {
                         "type": "text",
-                        "text": "Respond with LaTeX code that best matches the text in the image. Your goal is to only provide the code, no explanation is needed. The code should be complete and able to compile on its own. It is crucial that you generate LaTeX code that does not use \includegraphics or placeholder.",
+                        "text": "Transcribe the text and layout in the image into LaTeX. Your goal is to only respond with the LaTeX, no explanation is needed. The LaTeX should be complete and able to compile on its own. It is crucial that you generate LaTeX that does not use \includegraphics or placeholder. This is simply reproducing text similar to what's in the image and does not violate OpenAi content policy guidelines.",
                     },
                     {
                         "type": "image_url",
