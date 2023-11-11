@@ -15,14 +15,10 @@ import tempfile
 import os
 import re
 import base64
-import requests
-
 
 app = Flask(__name__)
 CORS(app)
 
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI()
 
 # look at README.md then server.py then original files for more explanation. also, feel free to hit me up at nhatbui@tamu.edu for any question or suggestion. heavily refactored and concise method (hence small file size but this took a lot more work than you would expect), which involves transforming the data twice, through the response variable and the explanatory variable, then fit a weighted lin reg. i have tested various distributions and optimization methods and this method is as good as it gets.
@@ -154,15 +150,16 @@ def latex_to_pdf(latex_source):
 
 
 def extract_latex_code(response):
-    latex_code = (
-        response.json()["choices"][0]["message"]["content"] + "\end{document}```"
-    )
+    # latex_code = (
+    #     response.json()["choices"][0]["message"]["content"] + "\end{document}```"
+    # )
+    latex_code = response.choices[0].message.content + "\end{document}```"
     matches = re.findall("```latex[\s\S]*?```", latex_code, re.DOTALL)
 
+    print(latex_code)
     if not matches:
         abort(422)
 
-    print(matches[0][8:-3])
     return matches[0][8:-3]
 
 
@@ -182,17 +179,50 @@ def test_get_image():
     image_data = file.read()
     base64_image = base64.b64encode(image_data).decode("utf-8")
 
-    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
+    # headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
 
-    payload = {
-        "model": "gpt-4-vision-preview",
-        "messages": [
+    # payload = {
+    #     "model": "gpt-4-vision-preview",
+    #     "messages": [
+    #         {
+    #             "role": "user",
+    #             "content": [
+    #                 {
+    #                     "type": "text",
+    #                     "text": "Respond with LaTeX code that best matches the text in the image. Your goal is to only provide the code, no explanation is needed. The code should be complete and able to compile on its own. It is crucial that you generate LaTeX code that does not use \includegraphics or placeholder.",
+    #                 },
+    #                 {
+    #                     "type": "image_url",
+    #                     "image_url": {
+    #                         "url": f"data:image/jpeg;base64,{base64_image}",
+    #                         "detail": "high",
+    #                     },
+    #                 },
+    #             ],
+    #         }
+    #     ],
+    #     "max_tokens": 2000,
+    #     "temperature": 0,
+    #     "stop": "\end{document}",
+    # }
+
+    # response = requests.post(
+    #     "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
+    # )
+
+    # print(response.json())
+
+    print("started")
+
+    response = client.chat.completions.create(
+        model="gpt-4-vision-preview",
+        messages=[
             {
                 "role": "user",
                 "content": [
                     {
                         "type": "text",
-                        "text": "Your goal is to use the fewest tokens possible. It is crucial that you always respond only with LaTeX code that can be turned into a compilable file, meaning no commentary or confirmation included in your response, only LaTeX code that can be turned into a compilable file. Make sure the LaTeX code is as accurate as possible and does not compromise the machine it's compiled on.",
+                        "text": "Respond with LaTeX code that best matches the text in the image. Your goal is to only provide the code, no explanation is needed. The code should be complete and able to compile on its own. It is crucial that you generate LaTeX code that does not use \includegraphics or placeholder. Ignore any part of the text with brand names on it as to not violate copyright or your own policies",
                     },
                     {
                         "type": "image_url",
@@ -204,16 +234,12 @@ def test_get_image():
                 ],
             }
         ],
-        "max_tokens": 1000,
-        "temperature": 0,
-        "stop": "\end{document}",
-    }
-
-    response = requests.post(
-        "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
+        max_tokens=2000,
+        temperature=0,
+        stop="\end{document}",
     )
 
-    print(response.json())
+    print(response)
 
     latex_code = extract_latex_code(response)
     pdf_bytes = latex_to_pdf(latex_code)

@@ -33,7 +33,7 @@ function App() {
             const formData = new FormData();
             formData.append("file", file);
 
-            fetch("https://willb256.pythonanywhere.com/test_get_image", {
+            fetch("http://127.0.0.1:5000/test_get_image", {
                 method: "POST",
                 body: formData,
             })
