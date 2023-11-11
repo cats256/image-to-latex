@@ -8,7 +8,7 @@ const exampleText = `\\documentclass{article}
 
 \\begin{document}
 
-Type your \\LaTeX\\ here. For example: $\\frac{1}{2}$
+\\LaTeX\\ code goes here. For example: $\\frac{1}{2}$
 
 \\end{document}`;
 
@@ -21,57 +21,53 @@ function App() {
     const handleInputChange = (event) => setInputText(event.target.value);
     const handleUploadClick = () => fileInputRef.current.click();
 
-    const base64ToBlob = async (base64Data, contentType) => {
-        const base64Response = await fetch(`data:${contentType};base64,${base64Data}`);
-        return base64Response.blob();
-    };
-
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
+    const handleGenerate = async (event) => {
+        try {
+            const file = event.target.files[0];
             const formData = new FormData();
             formData.append("file", file);
 
-            fetch("https://willb256.pythonanywhere.com/test_get_image", {
+            const response = await fetch("https://willb256.pythonanywhere.com/test_get_image", {
                 method: "POST",
                 body: formData,
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(async (data) => {
-                    const latexCode = data.latex_code;
-                    const base64PDF = data.pdf_file;
+            });
 
-                    const pdfBlob = await base64ToBlob(base64PDF, "application/pdf");
-                    const url = URL.createObjectURL(pdfBlob);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
 
-                    setPDFurl(url);
-                    setInputText(latexCode.startsWith("\n") ? latexCode.substring(1) : latexCode);
-                    setCompileText("Recompile (Ctrl + Enter)");
-                })
-                .catch((error) => {
-                    if (error.message.includes("422")) {
-                        setPDFurl("unable_to_produce_latex.pdf");
-                    } else if (error.message.includes("500")) {
-                        setPDFurl("compile-failed-document.pdf");
-                    } else {
-                        setPDFurl("compile-failed-server.pdf");
-                    }
-                    console.error("Error:", error);
-                    setCompileText("Recompile (Ctrl + Enter)");
-                });
-        } else {
-            setCompileText("Recompile (Ctrl + Enter)");
+            const data = await response.json();
+            const latexCode = data.latex_code;
+            const base64PDF = data.pdf_file;
+
+            const base64Response = await fetch(`data:application/pdf;base64,${base64PDF}`);
+            const pdfBlob = await base64Response.blob();
+            const url = URL.createObjectURL(pdfBlob);
+
+            setPDFurl(url);
+            setInputText(latexCode.trimStart());
+        } catch (error) {
+            console.error("Error:", error);
+            setPDFurl(
+                error.message.includes("422")
+                    ? "unable_to_produce_latex.pdf"
+                    : error.message.includes("500")
+                    ? "compile-failed-document.pdf"
+                    : "compile-failed-server.pdf"
+            );
         }
+        setCompileText("Upload Image");
     };
 
-    const handleCompile = (event) => {
-        setCompileText("Compiling. Please wait.");
-        handleFileChange(event);
+    const handleFileUpload = (event) => {
+        setCompileText("Generating. Please wait.");
+        handleGenerate(event);
+    };
+
+    const handleBase64Overleaf = () => {
+        const encodedText = btoa(inputText);
+        const overleafUrl = `https://www.overleaf.com/docs?snip_uri=data:application/x-tex;base64,${encodedText}`;
+        window.open(overleafUrl, "_blank");
     };
 
     return (
@@ -80,16 +76,13 @@ function App() {
                 <div className="menu-bar">
                     <ul className="menu-list">
                         <li onClick={handleUploadClick}>{compileText}</li>
-                        <input type="file" ref={fileInputRef} onChange={handleCompile} accept="image/*" />
+                        <input id="fileInput" type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" />
                         <li>Insert Image URL</li>
                         <li>Download TeX File</li>
+                        <li onClick={handleBase64Overleaf}>Open in Overleaf</li>
                     </ul>
                 </div>
-                <textarea
-                    value={inputText === exampleText ? inputText : inputText}
-                    onChange={handleInputChange}
-                    placeholder={exampleText}
-                />
+                <textarea value={inputText} onChange={handleInputChange} readOnly title="This field is read-only" />
             </div>
             <embed type="application/pdf" src={PDFurl} />
         </div>

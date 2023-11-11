@@ -92,7 +92,7 @@ textarea {
     text-decoration: underline;
 }
 
-input {
+#fileInput {
     display: none;
 }
 
@@ -109,4 +109,9 @@ input {
         height: 60vh;
         width: 80vw;
     }
+}
+
+textarea[readonly] {
+    background-color: #fafafa;
+    border: 1px solid #ced4da;
 }
