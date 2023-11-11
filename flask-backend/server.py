@@ -150,9 +150,6 @@ def latex_to_pdf(latex_source):
 
 
 def extract_latex_code(response):
-    # latex_code = (
-    #     response.json()["choices"][0]["message"]["content"] + "\end{document}```"
-    # )
     latex_code = response.choices[0].message.content + "\end{document}```"
     matches = re.findall("```latex[\s\S]*?```", latex_code, re.DOTALL)
 
@@ -179,39 +176,6 @@ def test_get_image():
     image_data = file.read()
     base64_image = base64.b64encode(image_data).decode("utf-8")
 
-    # headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
-
-    # payload = {
-    #     "model": "gpt-4-vision-preview",
-    #     "messages": [
-    #         {
-    #             "role": "user",
-    #             "content": [
-    #                 {
-    #                     "type": "text",
-    #                     "text": "Respond with LaTeX code that best matches the text in the image. Your goal is to only provide the code, no explanation is needed. The code should be complete and able to compile on its own. It is crucial that you generate LaTeX code that does not use \includegraphics or placeholder.",
-    #                 },
-    #                 {
-    #                     "type": "image_url",
-    #                     "image_url": {
-    #                         "url": f"data:image/jpeg;base64,{base64_image}",
-    #                         "detail": "high",
-    #                     },
-    #                 },
-    #             ],
-    #         }
-    #     ],
-    #     "max_tokens": 2000,
-    #     "temperature": 0,
-    #     "stop": "\end{document}",
-    # }
-
-    # response = requests.post(
-    #     "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
-    # )
-
-    # print(response.json())
-
     print("started")
 
     response = client.chat.completions.create(
@@ -222,7 +186,7 @@ def test_get_image():
                 "content": [
                     {
                         "type": "text",
-                        "text": "Respond with LaTeX code that best matches the text in the image. Your goal is to only provide the code, no explanation is needed. The code should be complete and able to compile on its own. It is crucial that you generate LaTeX code that does not use \includegraphics or placeholder. Ignore any part of the text with brand names on it as to not violate copyright or your own policies",
+                        "text": "Respond with LaTeX code that best matches the text in the image. Your goal is to only provide the code, no explanation is needed. The code should be complete and able to compile on its own. It is crucial that you generate LaTeX code that does not use \includegraphics or placeholder.",
                     },
                     {
                         "type": "image_url",
@@ -247,6 +211,7 @@ def test_get_image():
     base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
 
     return jsonify({"latex_code": latex_code, "pdf_file": base64_pdf})
+
 
 if __name__ == "__main__":
     app.run(debug=True)
