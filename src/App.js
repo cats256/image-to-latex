@@ -66,8 +66,7 @@ function App() {
 
     const openInOverleafWithBase64Encoding = () => {
         const encodedText = btoa(latexCode);
-        const overleafUrl = `https://www.overleaf.com/docs?snip_uri=data:application/x-tex;base64,${encodedText}`;
-        window.open(overleafUrl, "_blank");
+        window.open(`https://www.overleaf.com/docs?snip_uri=data:application/x-tex;base64,${encodedText}`, "_blank");
     };
 
     return (
