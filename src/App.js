@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import "./App.css";
 
-const exampleText = `\\documentclass{article}
+const defaultLatexTemplate = `\\documentclass{article}
 
 \\usepackage[utf8]{inputenc}
 \\usepackage{amsmath}
@@ -13,15 +13,15 @@ const exampleText = `\\documentclass{article}
 \\end{document}`;
 
 function App() {
-    const [inputText, setInputText] = useState(exampleText);
-    const [compileText, setCompileText] = useState("Upload Image");
-    const [PDFurl, setPDFurl] = useState("example.pdf");
-    const fileInputRef = useRef(null);
+    const [latexCode, setLatexCode] = useState(defaultLatexTemplate);
+    const [uploadButtonText, setUploadButtonText] = useState("Upload Image");
+    const [pdfUrl, setPdfUrl] = useState("example.pdf");
+    const uploadFileInputRef = useRef(null);
 
-    const handleInputChange = (event) => setInputText(event.target.value);
-    const handleUploadClick = () => fileInputRef.current.click();
+    const handleLatexCodeChange = (event) => setLatexCode(event.target.value);
+    const triggerFileUpload = () => uploadFileInputRef.current.click();
 
-    const handleGenerate = async (event) => {
+    const processImageUpload = async (event) => {
         try {
             const file = event.target.files[0];
             const formData = new FormData();
@@ -37,18 +37,18 @@ function App() {
             }
 
             const data = await response.json();
-            const latexCode = data.latex_code;
+            const updatedLatexCode = data.latex_code;
             const base64PDF = data.pdf_file;
 
             const base64Response = await fetch(`data:application/pdf;base64,${base64PDF}`);
             const pdfBlob = await base64Response.blob();
             const url = URL.createObjectURL(pdfBlob);
 
-            setPDFurl(url);
-            setInputText(latexCode.trimStart());
+            setPdfUrl(url);
+            setLatexCode(updatedLatexCode.trimStart());
         } catch (error) {
             console.error("Error:", error);
-            setPDFurl(
+            setPdfUrl(
                 error.message.includes("422")
                     ? "unable_to_produce_latex.pdf"
                     : error.message.includes("500")
@@ -56,16 +56,16 @@ function App() {
                     : "compile-failed-server.pdf"
             );
         }
-        setCompileText("Upload Image");
+        setUploadButtonText("Upload Image");
     };
 
-    const handleFileUpload = (event) => {
-        setCompileText("Generating. Please wait.");
-        handleGenerate(event);
+    const onFileSelected = (event) => {
+        setUploadButtonText("Generating. Please wait.");
+        processImageUpload(event);
     };
 
-    const handleBase64Overleaf = () => {
-        const encodedText = btoa(inputText);
+    const openInOverleafWithBase64Encoding = () => {
+        const encodedText = btoa(latexCode);
         const overleafUrl = `https://www.overleaf.com/docs?snip_uri=data:application/x-tex;base64,${encodedText}`;
         window.open(overleafUrl, "_blank");
     };
@@ -75,16 +75,22 @@ function App() {
             <div className="text-container">
                 <div className="menu-bar">
                     <ul className="menu-list">
-                        <li onClick={handleUploadClick}>{compileText}</li>
-                        <input id="fileInput" type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" />
+                        <li onClick={triggerFileUpload}>{uploadButtonText}</li>
+                        <input
+                            id="fileInput"
+                            type="file"
+                            ref={uploadFileInputRef}
+                            onChange={onFileSelected}
+                            accept="image/*"
+                        />
                         <li>Insert Image URL</li>
                         <li>Download TeX File</li>
-                        <li onClick={handleBase64Overleaf}>Open in Overleaf</li>
+                        <li onClick={openInOverleafWithBase64Encoding}>Open in Overleaf</li>
                     </ul>
                 </div>
-                <textarea value={inputText} onChange={handleInputChange} readOnly title="This field is read-only" />
+                <textarea value={latexCode} onChange={handleLatexCodeChange} readOnly title="This field is read-only" />
             </div>
-            <embed type="application/pdf" src={PDFurl} />
+            <embed type="application/pdf" src={pdfUrl} />
         </div>
     );
 }
